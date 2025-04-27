@@ -1,4 +1,4 @@
-type FeaturedCars = {
+export type FeaturedCars = {
   id: number;
   make: string;
   model: string;
@@ -13,19 +13,19 @@ type FeaturedCars = {
   wishlisted: boolean;
 }
 
-type CarMake = {
+export type CarMake = {
   id: number;
   name: string;
   image: string;
 };
 
-type BodyType = {
+export type BodyType = {
   id: number;
   name: string;
   image: string;
 };
 
-type FaqItem = {
+export type FaqItem = {
   question: string;
   answer: string;
 };

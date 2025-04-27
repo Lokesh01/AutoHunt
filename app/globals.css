@@ -140,7 +140,7 @@
 .dotted-background {
   background-color: #f8f9fa; /* Lighter gray (better contrast) */
   background-image: radial-gradient(
-    rgba(220, 47, 2, 0.15) 1px, /* Softer red dots */
+    rgba(220, 47, 2, 0.4) 1px, /* Softer red dots */
     transparent 1px
   );
   background-size: 30px 30px; /* More spacious grid */
@@ -149,7 +149,7 @@
 .dark .dotted-background {
   background-color: #212529;
   background-image: radial-gradient(
-    rgba(232, 93, 4, 0.2) 0.75px,
-    transparent 0.75px
+    rgba(232, 93, 4, 0.5) 0.75px,
+    transparent 1px
   );
 }

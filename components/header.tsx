@@ -24,7 +24,7 @@ const Header = ({ isAdminPage = false }: HeaderProps) => {
   const isAdmin = false;
   const { setTheme } = useTheme();
   return (
-    <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b dark:bg-gray-900/80 dark:border-gray-700">
+    <header className="fixed top-0 w-full bg-transparent backdrop-blur-md z-50 border-b dark:bg-gray-900/80 dark:border-gray-700">
       <nav className="mx-auto px-4 py-1 flex items-center justify-between">
         <Link href={isAdminPage ? "/admin" : "/"} className="flex glow-effect">
           <Image
