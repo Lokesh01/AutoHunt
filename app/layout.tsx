@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "sonner";
 
 const roboto_mono = Roboto_Mono({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
           <ClerkProvider>
             <Header />
             <main className="flex-1">{children}</main>
+            <Toaster richColors />
             <footer className="bg-gray-900 text-white py-6 dark:bg-gray-800">
               <div className="w-full px-7 flex flex-col md:flex-row justify-between items-center">
                 <p className="text-sm">

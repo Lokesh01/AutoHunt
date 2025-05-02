@@ -138,7 +138,7 @@
 }
 
 .dotted-background {
-  background-color: #f8f9fa; /* Lighter gray (better contrast) */
+  background-color: #f8f9fa;
   background-image: radial-gradient(
     rgba(220, 47, 2, 0.4) 1px, /* Softer red dots */
     transparent 1px
