@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { Roboto_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/header";
+// import Header from "@/components/header";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
+import HeaderWrapper from "@/components/headerWrapper";
 
 const roboto_mono = Roboto_Mono({
   subsets: ["latin"],
@@ -32,7 +33,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ClerkProvider>
-            <Header />
+            <HeaderWrapper />
             <main className="flex-1">{children}</main>
             <Toaster richColors />
             <footer className="bg-gray-900 text-white py-6 dark:bg-gray-800">
