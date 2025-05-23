@@ -2,11 +2,9 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import * as z from "zod";
-import type { CarStatus as CarStatusType } from "@/lib/generated/prisma";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MAX_IMAGE_SIZE } from "../../../constants";
 import { toast } from "sonner";
 import { useDropzone } from "react-dropzone";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -33,26 +31,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import useFetch from "@/hooks/use-fetch";
 import { addCar, processCarImageWithAI } from "@/actions/cars";
-
-// Predefined options
-const fuelTypes: string[] = [
-  "Petrol",
-  "Diesel",
-  "Electric",
-  "Hybrid",
-  "Plug-in Hybrid",
-];
-const transmissions: string[] = ["Automatic", "Manual", "Semi-Automatic"];
-const bodyTypes: string[] = [
-  "SUV",
-  "Sedan",
-  "Hatchback",
-  "Convertible",
-  "Coupe",
-  "Wagon",
-  "Pickup",
-];
-const carStatuses: CarStatusType[] = ["AVAILABLE", "UNAVAILABLE", "SOLD"];
+import { bodyTypes, carStatuses, fuelTypes, MAX_IMAGE_SIZE, transmissions } from "../../../constants";
 
 //for schema
 const carFormSchema = z.object({
@@ -81,7 +60,7 @@ const AddCarForm = () => {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedAiImage, setUploadedAiImage] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-  const [activeTab, setActiveTab] = useState<string>("ai"); // assuming "ai" and "upload" are your only tabs
+  const [activeTab, setActiveTab] = useState<string>("ai");
   const [imageError, setImageError] = useState<string>("");
 
   //initialize form with react-hook-form and zod
