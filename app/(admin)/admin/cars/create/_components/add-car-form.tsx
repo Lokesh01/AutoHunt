@@ -31,7 +31,13 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import useFetch from "@/hooks/use-fetch";
 import { addCar, processCarImageWithAI } from "@/actions/cars";
-import { bodyTypes, carStatuses, fuelTypes, MAX_IMAGE_SIZE, transmissions } from "../../../constants";
+import {
+  bodyTypes,
+  carStatuses,
+  fuelTypes,
+  MAX_IMAGE_SIZE,
+  transmissions,
+} from "../../../constants";
 
 //for schema
 const carFormSchema = z.object({
@@ -50,9 +56,12 @@ const carFormSchema = z.object({
   seats: z.string().optional(),
   description: z.string().min(10, "Description must be at least 10 characters"),
   status: z.enum(["AVAILABLE", "UNAVAILABLE", "SOLD"]),
-  featured: z.boolean().default(false),
+  featured: z.boolean(),
   // Images are handled separately
 });
+
+// Create a type from the schema
+type CarFormData = z.infer<typeof carFormSchema>;
 
 const AddCarForm = () => {
   const router = useRouter();
@@ -71,7 +80,7 @@ const AddCarForm = () => {
     formState: { errors },
     handleSubmit,
     watch,
-  } = useForm({
+  } = useForm<CarFormData>({
     resolver: zodResolver(carFormSchema),
     defaultValues: {
       make: "",
@@ -265,7 +274,7 @@ const AddCarForm = () => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: CarFormData) => {
     // check if images are uploaded
     if (uploadedImages.length === 0) {
       setImageError("Please upload at least one image");
@@ -506,7 +515,12 @@ const AddCarForm = () => {
                   <div className="space-y-2">
                     <Label htmlFor="status">Status</Label>
                     <Select
-                      onValueChange={(value) => setValue("status", value)}
+                      onValueChange={(value) =>
+                        setValue(
+                          "status",
+                          value as "AVAILABLE" | "UNAVAILABLE" | "SOLD"
+                        )
+                      }
                       defaultValue={getValues("status")}
                     >
                       <SelectTrigger>
@@ -547,7 +561,7 @@ const AddCarForm = () => {
                     id="featured"
                     checked={watch("featured")}
                     onCheckedChange={(checked) => {
-                      setValue("featured", checked);
+                      setValue("featured", Boolean(checked));
                     }}
                   />
                   <div className="space-y-1 leading-none">
