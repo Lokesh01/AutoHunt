@@ -265,7 +265,7 @@ export async function addCar({
 
       // Upload file buffer directly
       const { data, error } = await supabase.storage
-        .from("car-images")
+        .from("autohunt-images")
         .upload(filePath, imageBuffer, {
           contentType: `image/${fileExtension}`,
         });

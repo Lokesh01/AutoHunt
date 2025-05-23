@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import * as z from "zod";
 import type { CarStatus as CarStatusType } from "@/lib/generated/prisma";
 import { useRouter } from "next/navigation";
@@ -28,10 +28,11 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Span } from "next/dist/trace";
-import { Camera, Divide, Loader2, Upload, X } from "lucide-react";
+import { Camera, Loader2, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import useFetch from "@/hooks/use-fetch";
+import { addCar, processCarImageWithAI } from "@/actions/cars";
 
 // Predefined options
 const fuelTypes: string[] = [
@@ -109,6 +110,85 @@ const AddCarForm = () => {
       featured: false,
     },
   });
+
+  //custom hook for api calls
+  const {
+    loading: addCarLoading,
+    fn: addCarFn,
+    data: addCarResult,
+  } = useFetch(addCar);
+
+  const {
+    loading: processImageLoading,
+    fn: processImageFn,
+    data: processImageResult,
+    error: processImageError,
+  } = useFetch(processCarImageWithAI);
+
+  // handle successful car addition
+  useEffect(() => {
+    if (addCarResult?.success) {
+      toast.success("Car added successfully");
+      router.push("/admin/cars");
+    }
+  }, [addCarResult, router]);
+
+  useEffect(() => {
+    if (processImageError) {
+      toast.error(processImageError.message || "Failed to upload car");
+    }
+  }, [processImageError]);
+
+  //handle successful AI processing
+  useEffect(() => {
+    if (processImageResult?.success && processImageResult.data) {
+      const carDetails = processImageResult.data;
+      // Update form with AI results
+      setValue("make", carDetails.make);
+      setValue("model", carDetails.model);
+      setValue("year", carDetails.year.toString());
+      setValue("color", carDetails.color);
+      setValue("bodyType", carDetails.bodyType);
+      setValue("fuelType", carDetails.fuelType);
+      setValue("price", carDetails.price);
+      setValue("mileage", carDetails.mileage);
+      setValue("transmission", carDetails.transmission);
+      setValue("description", carDetails.description);
+
+      // add the image to the uploaded images array
+      if (uploadedAiImage) {
+        const reader = new FileReader();
+
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          const result = e.target?.result;
+          if (typeof result === "string") {
+            setUploadedImages((prev) => [...prev, result]);
+          }
+        };
+
+        reader.readAsDataURL(uploadedAiImage);
+      }
+
+      toast.success("Successfully extracted car details", {
+        description: `Detected ${carDetails.year} ${carDetails.make} ${
+          carDetails.model
+        } with ${Math.round(carDetails.confidence * 100)}% confidence`,
+      });
+
+      // Switch to manual tab for the user to review and fill in missing details
+      setActiveTab("manual");
+    }
+  }, [processImageResult, setValue, uploadedAiImage]);
+
+  //process image with gemini ai
+  const processWithAI = async () => {
+    if (!uploadedAiImage) {
+      toast.error("please upload an image first");
+      return;
+    }
+
+    await processImageFn(uploadedAiImage);
+  };
 
   // Handle AI image upload with dropzone
   const onAiDrop = useCallback((acceptedFiles: File[]) => {
@@ -206,7 +286,28 @@ const AddCarForm = () => {
     setUploadedImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const onSubmit = async (data) => {};
+  const onSubmit = async (data) => {
+    // check if images are uploaded
+    if (uploadedImages.length === 0) {
+      setImageError("Please upload at least one image");
+      return;
+    }
+
+    //prepare data for server action
+    const carData = {
+      ...data,
+      year: parseInt(data.year),
+      price: parseFloat(data.price),
+      mileage: parseFloat(data.mileage),
+      seats: data.seats ? parseInt(data.seats) : null,
+    };
+
+    //call the addcar function with our usefetch hook
+    await addCarFn({
+      carData,
+      images: uploadedImages,
+    });
+  };
 
   return (
     <div>
@@ -551,9 +652,9 @@ const AddCarForm = () => {
                 <Button
                   type="submit"
                   className="w-full md:w-auto"
-                  disabled={false}
+                  disabled={addCarLoading}
                 >
-                  {false ? (
+                  {addCarLoading ? (
                     <>
                       <Loader2 className="animate-spin mr-2 h-4 w-4" /> Adding
                       Car...
@@ -582,7 +683,7 @@ const AddCarForm = () => {
                 <div className="border-2 border-dashed rounded-lg p-6 text-center">
                   {imagePreview ? (
                     <div className="flex flex-col items-center">
-                      <Image
+                      <img
                         src={imagePreview}
                         alt="car preview"
                         className="max-h-56 max-w-full object-contain mb-4"
@@ -598,8 +699,12 @@ const AddCarForm = () => {
                         >
                           Remove
                         </Button>
-                        <Button onClick={() => {}} disabled={true}>
-                          {true ? (
+                        <Button
+                          onClick={processWithAI}
+                          disabled={processImageLoading}
+                          size="sm"
+                        >
+                          {processImageLoading ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin " />
                               Processing...
@@ -632,7 +737,7 @@ const AddCarForm = () => {
                   )}
                 </div>
 
-                {false && (
+                {processImageLoading && (
                   <div className="bg-red-50 text-red-500 p-4 rounded-md flex items-center">
                     <Loader2 className="animate-spin mr-2 h-5 w-5" />
                     <div>
@@ -650,7 +755,10 @@ const AddCarForm = () => {
                   </h3>
                   <ol className="space-y-2 text-sm text-gray-600 dark:text-gray-300 list-decimal pl-4">
                     <li>Upload a clear image of the car</li>
-                    <li>Click "Extract Details" to analyze with Gemini AI</li>
+                    <li>
+                      Click &quot;Extract Details&quot; to analyze with Gemini
+                      AI
+                    </li>
                     <li>Review the extracted information</li>
                     <li>Fill in any missing details manually</li>
                     <li>Add the car to your inventory</li>
