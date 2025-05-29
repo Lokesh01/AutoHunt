@@ -13,6 +13,7 @@ import {
   type CarStatus,
 } from "@/lib/generated/prisma";
 import { createClient } from "@/lib/supabase";
+import { serializeCarData } from "@/lib/helper";
 
 // Define TypeScript interfaces
 interface CarAIResponse {
@@ -186,6 +187,7 @@ export async function processCarImageWithAI(
   }
 }
 
+//add a car to the db with images
 export async function addCar({
   carData,
   images,
@@ -303,5 +305,161 @@ export async function addCar({
         error instanceof Error ? error.message : String(error)
       }`
     );
+  }
+}
+
+// fetch all cars with simple search
+export async function getCars(search: string = "") {
+  try {
+    //build where condition
+    const where: Prisma.CarWhereInput = {};
+
+    //add search filter
+    if (search) {
+      where.OR = [
+        { make: { contains: search, mode: "insensitive" } },
+        { model: { contains: search, mode: "insensitive" } },
+        { color: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    //executing main query
+    const cars = await db.car.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+    });
+
+    const serializedCarData = cars.map((car) => serializeCarData(car));
+
+    return {
+      success: true,
+      data: serializedCarData,
+    };
+  } catch (error) {
+    console.log("Error fetching cars", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+// delete a car by ID
+export async function deleteCar(id: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    // First, fetch the car to get its images
+    const car = await db.car.findUnique({
+      where: { id },
+      select: { images: true },
+    });
+
+    if (!car) {
+      return {
+        success: false, // Changed from true to false since it's an error case
+        error: "Car not found!",
+      };
+    }
+
+    // Delete car from the db
+    await db.car.delete({
+      where: { id },
+    });
+
+    // Delete the images from Supabase storage
+    try {
+      const cookieStore = cookies();
+      const supabase = createClient(cookieStore);
+
+      // Extract file paths from image URLs with proper type safety
+      const filePaths = car.images
+        .map((imageUrl) => {
+          try {
+            const url = new URL(imageUrl);
+            const pathMatch = url.pathname.match(/\/autohunt-images\/(.*)/);
+            return pathMatch ? pathMatch[1] : null;
+          } catch {
+            return null;
+          }
+        })
+        .filter((path): path is string => path !== null); // Type guard
+
+      // Delete files from storage if paths were extracted
+      if (filePaths.length > 0) {
+        const { error } = await supabase.storage
+          .from("autohunt-images")
+          .remove(filePaths); // Now properly typed as string[]
+
+        if (error) {
+          console.error("Error deleting images:", error);
+          throw error; // Consider propagating the error
+        }
+      }
+    } catch (storageError) {
+      console.error("Error with storage operation:", storageError);
+      // Continue with the function even if storage operations fail
+    }
+
+    // Revalidate the cars list page
+    revalidatePath("/admin/cars");
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting car", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export async function updateCarStatus(
+  id: string,
+  { status, featured }: { status?: CarStatus; featured?: boolean }
+): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const updateData: {
+      status?: CarStatus;
+      featured?: boolean;
+    } = {};
+
+    if (status !== undefined) {
+      updateData.status = status;
+    }
+
+    if (featured !== undefined) {
+      updateData.featured = featured;
+    }
+
+    // Update the car
+    await db.car.update({
+      where: { id },
+      data: updateData,
+    });
+
+    // Revalidate the cars list page
+    revalidatePath("/admin/cars");
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error updating car status:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
