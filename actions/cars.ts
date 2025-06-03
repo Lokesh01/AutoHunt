@@ -345,10 +345,7 @@ export async function getCars(search: string = "") {
 }
 
 // delete a car by ID
-export async function deleteCar(id: string): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function deleteCar(id: string) {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
@@ -393,11 +390,11 @@ export async function deleteCar(id: string): Promise<{
       if (filePaths.length > 0) {
         const { error } = await supabase.storage
           .from("autohunt-images")
-          .remove(filePaths); // Now properly typed as string[]
+          .remove(filePaths);
 
         if (error) {
           console.error("Error deleting images:", error);
-          throw error; // Consider propagating the error
+          throw error;
         }
       }
     } catch (storageError) {
@@ -423,10 +420,7 @@ export async function deleteCar(id: string): Promise<{
 export async function updateCarStatus(
   id: string,
   { status, featured }: { status?: CarStatus; featured?: boolean }
-): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+) {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
