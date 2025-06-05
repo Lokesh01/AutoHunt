@@ -38,14 +38,28 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { Car } from "@prisma/client";
+import type { Car as PrismaCar, CarStatus } from "@/lib/generated/prisma";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useDebounce } from "@/hooks/use-debounce";
+
+type CarListItem = Omit<PrismaCar, "price"> & {
+  price: number; // override only the 'price' field
+};
 
 const CarsList = () => {
   const router = useRouter();
   // State for search and dialogs
   const [search, setSearch] = useState<string>("");
+  const debouncedSearch = useDebounce(search, 300);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
-  const [carToDelete, setCarToDelete] = useState<Car>(null);
+  const [carToDelete, setCarToDelete] = useState<CarListItem | null>(null);
 
   //custom hooks for API calls
   const {
@@ -69,10 +83,18 @@ const CarsList = () => {
     error: updateError,
   } = useFetch(updateCarStatus);
 
+  const parsedCars: CarListItem[] =
+    carsData?.data?.map((car) => ({
+      ...car,
+      price: Number(car.price), // ensure price is number
+      createdAt: new Date(car.createdAt),
+      updatedAt: new Date(car.updatedAt),
+    })) || [];
+
   //initial fetch and refetch on search changes
   useEffect(() => {
-    fetchCars(search);
-  }, [search]);
+    fetchCars(debouncedSearch);
+  }, [debouncedSearch]);
 
   //handle errors
   useEffect(() => {
@@ -96,7 +118,7 @@ const CarsList = () => {
       toast.success("Car updated successfully");
       fetchCars(search);
     }
-  }, [deleteResult, updateResult, search]);
+  }, [deleteResult, updateResult]);
 
   // handle search submit
   const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -114,17 +136,17 @@ const CarsList = () => {
   };
 
   //handle toggle featured status
-  const handleToggleFeatured = async (car) => {
+  const handleToggleFeatured = async (car: CarListItem) => {
     await updateCarStatusFn(car.id, { featured: !car.featured });
   };
 
   // Handle status change
-  const handleStatusUpdate = async (car, newStatus) => {
+  const handleStatusUpdate = async (car: CarListItem, newStatus: CarStatus) => {
     await updateCarStatusFn(car.id, { status: newStatus });
   };
 
   // Get status badge color
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: CarStatus) => {
     switch (status) {
       case "AVAILABLE":
         return (
@@ -148,6 +170,8 @@ const CarsList = () => {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  const carsList = carsData?.success && carsData.data ? carsData.data : [];
 
   return (
     <div className="space-y-4">
@@ -184,7 +208,7 @@ const CarsList = () => {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
             </div>
-          ) : carsData?.success && carsData.data.length > 0 ? (
+          ) : carsList.length > 0 ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
@@ -200,7 +224,7 @@ const CarsList = () => {
                 </TableHeader>
 
                 <TableBody>
-                  {carsData?.data?.map((car) => (
+                  {parsedCars?.map((car) => (
                     <TableRow key={car.id}>
                       <TableCell>
                         <div className="w-10 h-10 rounded-md overflow-hidden">
@@ -228,7 +252,13 @@ const CarsList = () => {
                       <TableCell>{formatCurrency(car.price)}</TableCell>
                       <TableCell>{getStatusBadge(car.status)}</TableCell>
                       <TableCell>
-                        <Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="p-0 h-9 w-9"
+                          onClick={() => handleToggleFeatured(car)}
+                          disabled={updatingCar}
+                        >
                           {car.featured ? (
                             <Star className="h-5 w-5 text-amber-500 fill-amber-500" />
                           ) : (
@@ -303,10 +333,60 @@ const CarsList = () => {
               </Table>
             </div>
           ) : (
-            <div></div>
+            <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+              <CarIcon className="h-12 w-12 text-gray-300 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                No Cars Found
+              </h3>
+              <p className="text-gray-500 mb-4">
+                {search
+                  ? "No cars match your search criteria."
+                  : "Your inventory is empty. Add Cars to get started."}
+              </p>
+              <Button onClick={() => router.push("admin/cars/create")}>
+                Add your First Car
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      {/* Delete confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {carToDelete?.make}{" "}
+              {carToDelete?.model} ({carToDelete?.year})? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deletingCar}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteCars}
+              disabled={deletingCar}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              {deletingCar ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete Car"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
