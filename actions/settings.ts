@@ -2,8 +2,15 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import type { WorkingHour, UserRole } from "@/lib/generated/prisma";
+import type { DayOfWeek, UserRole } from "@/lib/generated/prisma";
 import { revalidatePath } from "next/cache";
+
+export type CreateWorkingHourInput = {
+  dayOfWeek: string;
+  openTime: string;
+  closeTime: string;
+  isOpen: boolean;
+};
 
 //get dealership info with working hours
 export async function getDealershipInfo() {
@@ -102,7 +109,7 @@ export async function getDealershipInfo() {
 }
 
 //save working hours
-export async function saveWorkingHours(workingHours: WorkingHour[]) {
+export async function saveWorkingHours(workingHours: CreateWorkingHourInput[]) {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
@@ -138,7 +145,7 @@ export async function saveWorkingHours(workingHours: WorkingHour[]) {
     for (const hour of workingHours) {
       await db.workingHour.create({
         data: {
-          dayOfWeek: hour.dayOfWeek,
+          dayOfWeek: hour.dayOfWeek as DayOfWeek,
           openTime: hour.openTime,
           closeTime: hour.closeTime,
           isOpen: hour.isOpen,

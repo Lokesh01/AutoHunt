@@ -6,7 +6,7 @@ import {
   saveWorkingHours,
   updateUserRole,
 } from "@/actions/settings";
-import { DayOfWeek, type User as prismaUser } from "@/lib/generated/prisma";
+import { type User as prismaUser } from "@/lib/generated/prisma";
 import useFetch from "@/hooks/use-fetch";
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -209,6 +209,8 @@ const SettingsForm = () => {
     field: string,
     value: string | boolean
   ) => {
+    if (!workingHours) return;
+
     const updatedHours = [...workingHours];
     updatedHours[index] = {
       ...updatedHours[index],
@@ -219,6 +221,8 @@ const SettingsForm = () => {
 
   //save working hours
   const handleSaveHours = async () => {
+    if (!workingHours) return;
+
     await saveHours(workingHours);
   };
 
@@ -443,7 +447,15 @@ const SettingsForm = () => {
                                 size="sm"
                                 className="text-red-600 cursor-pointer"
                                 onClick={() => {
-                                  setUserToDemote(user);
+                                  setUserToDemote({
+                                    ...user,
+                                    createdAt: new Date(
+                                      user.createdAt
+                                    ),
+                                    updatedAt: new Date(
+                                      user.updatedAt
+                                    ),
+                                  });
                                   setConfirmRemoveDialog(true);
                                 }}
                                 disabled={updatingRole}
@@ -457,7 +469,15 @@ const SettingsForm = () => {
                                 size="sm"
                                 className="text-green-600 cursor-pointer"
                                 onClick={() => {
-                                  setUserToPromote(user);
+                                  setUserToPromote({
+                                    ...user,
+                                    createdAt: new Date(
+                                      user.createdAt
+                                    ),
+                                    updatedAt: new Date(
+                                      user.updatedAt
+                                    ),
+                                  });
                                   setConfirmAdminDialog(true);
                                 }}
                                 disabled={updatingRole}
@@ -549,10 +569,7 @@ const SettingsForm = () => {
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleRemoveAdmin}
-                  disabled={updatingRole}
-                >
+                <Button onClick={handleRemoveAdmin} disabled={updatingRole}>
                   {updatingRole ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
