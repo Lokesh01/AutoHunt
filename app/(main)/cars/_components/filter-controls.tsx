@@ -21,14 +21,14 @@ const CarFilterControls = ({
   onClearFilter,
 }: PropTypes) => {
   const { make, bodyType, fuelType, transmission, priceRange } = currentFilters;
-  console.log("lok currentFilters", currentFilters);
-  console.log("lok filters", filters);
+  // console.log("lok currentFilters", currentFilters);
+  // console.log("lok filters", filters);
 
   const filterSections = [
     {
       id: "make",
       title: "Make",
-      option: filters.makes?.map((make) => ({ value: make, label: make })),
+      options: filters.makes?.map((make) => ({ value: make, label: make })),
       currentValue: make,
       onChange: (value: string) => onFilterChange("make", value),
     },
