@@ -5,7 +5,6 @@ import { CarWhereInput } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { serializeCarData } from "@/lib/helper";
-import { Pagination } from "@/components/ui/pagination";
 
 export type GetFilteredCarsParams = {
   search?: string;

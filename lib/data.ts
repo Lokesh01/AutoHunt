@@ -10,6 +10,7 @@ export type FeaturedCars = {
   bodyType: string;
   mileage: number;
   color: string;
+  wishlisted?: boolean;
 }
 
 export type CarMake = {
