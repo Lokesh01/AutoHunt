@@ -45,8 +45,8 @@ const CarCard = ({ car }: CardProps) => {
   }, [toggleError]);
 
   const handleToggleSave = async (e: React.MouseEvent) => {
-    e.stopPropagation();
     e.preventDefault();
+    e.stopPropagation();
 
     if (!isSignedIn) {
       toast.error("Please sign in to save a car");
@@ -54,7 +54,7 @@ const CarCard = ({ car }: CardProps) => {
       return;
     }
 
-    if (!isToggling) return;
+    if (isToggling) return;
 
     await toggleSavedCarFn(car.id);
   };
