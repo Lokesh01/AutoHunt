@@ -12,16 +12,19 @@ export interface Dealership {
   phone?: string;
   email?: string;
   workingHours?: WorkingHour[];
+  name: string;
 }
 
 export interface UserTestDrive {
   id: string;
   status: BookingStatus;
   bookingDate: string;
+  startTime: string;
+  endTime: string;
 }
 
 export interface TestDriveInfo {
-  userTestDrive: UserTestDrive | null;
+  userTestDrive: UserTestDrive[];
   dealership: Dealership | null;
 }
 
