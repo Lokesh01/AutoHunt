@@ -6,11 +6,13 @@ import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import Dropzone, {
+import {
   useDropzone,
   type DropzoneOptions,
   type FileRejection,
 } from "react-dropzone";
+import useFetch from "@/hooks/use-fetch";
+import { processImageSearch } from "@/actions/home";
 
 const HomeSearch = () => {
   const router = useRouter();
@@ -22,7 +24,39 @@ const HomeSearch = () => {
     useState<boolean>(false);
 
   //use the usefetch hook for image processing
-  // const {} = useFetch();
+  const {
+    loading: isProcessing,
+    fn: processImageFn,
+    data: processResult,
+    error: processError,
+  } = useFetch(processImageSearch);
+
+  //handle process result and error
+  useEffect(() => {
+    if (processResult?.success) {
+      const params = new URLSearchParams();
+
+      //add extracted params to the search
+      if (processResult.data.make) params.set("make", processResult.data.make);
+      if (processResult.data.bodyType)
+        params.set("bodyType", processResult.data.bodyType);
+      if (processResult.data.color)
+        params.set("color", processResult.data.color);
+
+      //redirect to search results
+      router.push(`/cars?${params.toString()}`);
+    }
+  }, [processResult, router]);
+
+  useEffect(() => {
+    if (processError) {
+      toast.error(
+        "Failed to analyze the image:" +
+          (processError.message || "Unknown error")
+      );
+    }
+  }, [processError]);
+
   const handleTextSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!searchTerm.trim()) {
@@ -30,6 +64,15 @@ const HomeSearch = () => {
       return;
     }
     router.push(`/cars?search=${encodeURIComponent(searchTerm)}`);
+  };
+
+  const handleImageSearch = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!searchImage) {
+      toast.error("Please upload an image");
+      return;
+    }
+    await processImageFn(searchImage);
   };
 
   // Handle image upload with react-dropzone
@@ -74,6 +117,7 @@ const HomeSearch = () => {
 
   const { getRootProps, getInputProps, isDragActive, isDragReject } =
     useDropzone(dropzoneOptions);
+
   return (
     <div>
       <form onSubmit={handleTextSearch}>
@@ -111,7 +155,7 @@ const HomeSearch = () => {
 
       {isImageSearchActive && (
         <div className="mt-4">
-          <form onSubmit={handleTextSearch} className="space-y-4">
+          <form onSubmit={handleImageSearch} className="space-y-4">
             <div className="border-2 border-dashed border-gray-300 rounded-3xl p-6 text-center">
               {imagePreview ? (
                 <div className="flex flex-col items-center">
@@ -157,9 +201,13 @@ const HomeSearch = () => {
               <Button
                 type="submit"
                 className="w-full cursor-pointer glow-effect"
-                disabled={isUploading}
+                disabled={isUploading || isProcessing}
               >
-                {isUploading ? "Uploading..." : "Search with this Image"}
+                {isUploading
+                  ? "Uploading..."
+                  : isProcessing
+                  ? "Analyzing image..."
+                  : "Search with this Image"}
               </Button>
             )}
           </form>
