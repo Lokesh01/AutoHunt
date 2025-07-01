@@ -1,4 +1,5 @@
 import type { BookingStatus, CarStatus } from "@/lib/generated/prisma";
+import { SerializedCarType } from "@/lib/helper";
 
 export interface WorkingHour {
   dayOfWeek: string;
@@ -17,10 +18,15 @@ export interface Dealership {
 
 export interface UserTestDrive {
   id: string;
+  carId: string;
+  car: SerializedCarType;
   status: BookingStatus;
   bookingDate: string;
   startTime: string;
   endTime: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface TestDriveInfo {
