@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 
 //type will be generic for arguments and response data, need to be replaced with actual type while calling the hook
 function useFetch<TArgs extends unknown[], TData>(
@@ -15,8 +16,10 @@ function useFetch<TArgs extends unknown[], TData>(
     try {
       const response = await cb(...args);
       setData(response);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Unknown error"));
+      toast.error(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
