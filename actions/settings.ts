@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import type { DayOfWeek, UserRole } from "@/lib/generated/prisma";
 import { revalidatePath } from "next/cache";
+import { getUserFromDb } from "./utils/auth-util";
 
 export type CreateWorkingHourInput = {
   dayOfWeek: string;
@@ -111,15 +112,8 @@ export async function getDealershipInfo() {
 //save working hours
 export async function saveWorkingHours(workingHours: CreateWorkingHourInput[]) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
     //check if user is admin
-    const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
-    });
+    const user = await getUserFromDb();
 
     if (!user || user.role !== "ADMIN") {
       throw new Error(
@@ -172,15 +166,8 @@ export async function saveWorkingHours(workingHours: CreateWorkingHourInput[]) {
 //get all users
 export async function getUsers() {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
     //check if user is admin
-    const user = await db.user.findUnique({
-      where: {
-        clerkUserId: userId,
-      },
-    });
+    const user = await getUserFromDb();
 
     if (!user || user.role !== "ADMIN") {
       throw new Error(
@@ -213,13 +200,8 @@ export async function getUsers() {
 //update user role
 export async function updateUserRole(userId: string, role: UserRole) {
   try {
-    const { userId: adminId } = await auth();
-    if (!adminId) throw new Error("Unauthorized");
-
     //check if user is admin
-    const adminUser = await db.user.findUnique({
-      where: { clerkUserId: adminId },
-    });
+    const adminUser = await getUserFromDb();
 
     if (!adminUser || adminUser.role !== "ADMIN") {
       throw new Error(
