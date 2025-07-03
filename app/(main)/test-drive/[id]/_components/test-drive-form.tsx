@@ -458,19 +458,21 @@ const TestDriveForm = ({
             </form>
 
             {/* Instructions */}
-            <div className="mt-8 bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium mb-2">What to expect</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
+            <div className="mt-8 bg-gray-50 p-4 rounded-lg dark:bg-gray-800 dark:border dark:border-gray-600">
+              <h3 className="font-medium mb-2 dark:text-white">
+                What to expect
+              </h3>
+              <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                 <li className="flex items-start">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 dark:text-green-400" />
                   Bring your driver&apos;s license for verification
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 dark:text-green-400" />
                   Test drives typically last 30-60 minutes
                 </li>
                 <li className="flex items-start">
-                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-green-500 mr-2 mt-0.5 dark:text-green-400" />
                   A dealership representative will accompany you
                 </li>
               </ul>
