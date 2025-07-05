@@ -1,7 +1,7 @@
 "use client";
 
 import { cancelTestDrive } from "@/actions/test-drive";
-import { UserTestDrive } from "@/app/types/car";
+import { UserTestDrive } from "@/app/types/carTypes";
 import TestDriveCard from "@/components/test-drive-card";
 import { Button } from "@/components/ui/button";
 import useFetch from "@/hooks/use-fetch";

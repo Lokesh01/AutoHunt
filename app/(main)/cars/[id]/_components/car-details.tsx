@@ -35,7 +35,7 @@ import { format } from "date-fns";
 import {
   Car as CarTypes,
   TestDriveInfo as TestDriveInfoTypes,
-} from "@/app/types/car";
+} from "@/app/types/carTypes";
 
 const CarDetails = ({
   car,

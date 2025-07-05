@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { UserTestDrive } from "@/app/types/car";
+import { UserTestDrive } from "@/app/types/carTypes";
 import { format, parseISO } from "date-fns";
 import { Badge } from "./ui/badge";
 import { Card } from "./ui/card";

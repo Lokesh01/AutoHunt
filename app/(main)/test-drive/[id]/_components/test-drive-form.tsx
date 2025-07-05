@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   Car as CarTypes,
   TestDriveInfo as TestDriveInfoTypes,
-} from "@/app/types/car";
+} from "@/app/types/carTypes";
 import { bookTestDrive } from "@/actions/test-drive";
 import { Card, CardContent } from "@/components/ui/card";
 import { CalendarIcon, Car, CheckCircle2, Loader2 } from "lucide-react";
