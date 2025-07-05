@@ -1,0 +1,22 @@
+# replace with your own creds
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+#supabse url
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+
+# Connect to Supabase via connection pooling
+DATABASE_URL="postgres_supabse_url"
+
+# Direct connection to the database. Used for migrations
+DIRECT_URL="postgres_supabase_direct_url"
+
+ARCJET_KEY=arcjet_key
+
+GEMINI_API_KEY=gemini_api_key
