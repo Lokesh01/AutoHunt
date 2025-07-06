@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import TestDriveForm from "./_components/test-drive-form";
 
 type ParamsType = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function generateMetadata() {
@@ -16,7 +16,7 @@ export async function generateMetadata() {
 }
 
 const page = async ({ params }: ParamsType) => {
-  const { id } = params;
+  const { id } = await params;
   const result = await getCarById(id);
 
   //if car not found, show 404

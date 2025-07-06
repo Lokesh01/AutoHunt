@@ -3,9 +3,9 @@ import { notFound } from "next/navigation";
 import CarDetails from "./_components/car-details";
 
 type ParamsType = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: ParamsType) {
@@ -48,4 +48,3 @@ const CarDetailsPage = async ({ params }: ParamsType) => {
 };
 
 export default CarDetailsPage;
-
