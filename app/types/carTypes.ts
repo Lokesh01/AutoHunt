@@ -30,7 +30,7 @@ export interface UserTestDrive {
 }
 
 export interface TestDriveInfo {
-  userTestDrive: UserTestDrive[];
+  userTestDrive: UserTestDrive | null;
   dealership: Dealership | null;
 }
 

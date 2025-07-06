@@ -34,16 +34,27 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
 import {
   Car as CarTypes,
-  TestDriveInfo as TestDriveInfoTypes,
+  Dealership as DealershipType,
 } from "@/app/types/carTypes";
+import type { BookingStatus as BookingStatusType } from "@/lib/generated/prisma";
 
-const CarDetails = ({
-  car,
-  testDriveInfo,
-}: {
-  car: CarTypes;
-  testDriveInfo: TestDriveInfoTypes;
-}) => {
+type ModifiedCar = Omit<CarTypes, "testDriveInfo"> & {
+  testDriveInfo: {
+    userTestDrive: {
+      id: string;
+      status: BookingStatusType;
+      bookingDate: string;
+    } | null;
+    dealership: DealershipType | null;
+  };
+};
+
+type PropsType = {
+  car: ModifiedCar;
+  testDriveInfo: ModifiedCar["testDriveInfo"];
+};
+
+const CarDetails = ({ car, testDriveInfo }: PropsType) => {
   const router = useRouter();
   const { isSignedIn } = useAuth();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
