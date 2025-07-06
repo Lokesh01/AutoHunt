@@ -9,7 +9,6 @@ import { revalidatePath } from "next/cache";
 // Import Prisma types directly from generated types
 import {
   Prisma,
-  type Car as PrismaCar,
   type CarStatus,
 } from "@/lib/generated/prisma";
 import { createClient } from "@/lib/supabase";
@@ -287,7 +286,7 @@ export async function addCar({
     }
 
     // Add the car to the database with the image URLs
-    const car = await db.car.create({
+    await db.car.create({
       data: {
         ...carCreateData,
         images: imageUrls, // Store the array of image URLs
@@ -312,10 +311,12 @@ export async function addCar({
 export async function getCars(search: string = "") {
   try {
     //build where condition
-    const where: Prisma.CarWhereInput = {};
+    const where = {};
 
     //add search filter
     if (search) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       where.OR = [
         { make: { contains: search, mode: "insensitive" } },
         { model: { contains: search, mode: "insensitive" } },

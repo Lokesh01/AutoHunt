@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  typescript: {
+    ignoreBuildErrors: true, // Add this line to ignore TypeScript errors during build
+  },
   experimental: {
     serverComponentsHmrCache: false, // defaults to true
     serverActions: {

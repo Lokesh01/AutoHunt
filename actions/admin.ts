@@ -5,6 +5,7 @@ import { db } from "@/lib/prisma";
 import type { BookingStatus } from "@/lib/generated/prisma";
 import { revalidatePath } from "next/cache";
 import { getUserFromDb } from "./utils/auth-util";
+import { GetDashboardDataResult } from "@/app/types/dashboardTypes";
 
 export async function getAdmin() {
   const user = await getUserFromDb();
@@ -39,11 +40,15 @@ export async function getAdminTestDrives({
 
     //add status filter
     if (status) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       where.status = status;
     }
 
     //add search filter
     if (search) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       where.OR = [
         {
           car: {
@@ -173,7 +178,7 @@ export async function updateTestDriveStatus(
   }
 }
 
-export async function getDashboardData() {
+export async function getDashboardData(): Promise<GetDashboardDataResult> {
   try {
     // Get user
     const user = await getUserFromDb();

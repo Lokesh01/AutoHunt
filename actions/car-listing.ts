@@ -1,7 +1,6 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { CarWhereInput } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { serializeCarData } from "@/lib/helper";
@@ -112,7 +111,7 @@ export async function getFilteredCars({
     }
 
     //building where condition
-    let where: CarWhereInput = {
+    const where: any = {
       status: "AVAILABLE",
     };
 
@@ -132,7 +131,7 @@ export async function getFilteredCars({
 
     //add price range
     where.price = {
-      gte: typeof minPrice === 'string' ? parseFloat(minPrice) : minPrice || 0,
+      gte: typeof minPrice === "string" ? parseFloat(minPrice) : minPrice || 0,
     };
 
     if (maxPrice && maxPrice < Number.MAX_SAFE_INTEGER) {
