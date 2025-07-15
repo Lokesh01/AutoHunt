@@ -100,17 +100,23 @@ export async function getFilteredCars({
   limit = 6,
 }: GetFilteredCarsParams) {
   try {
-    //get current user if authenticated
-    const { userId } = await auth();
+    // Try to get current user
     let dbUser = null;
 
-    if (userId) {
-      dbUser = await db.user.findUnique({
-        where: { clerkUserId: userId },
-      });
+    try {
+      const { userId } = await auth();
+      if (userId) {
+        dbUser = await db.user.findUnique({
+          where: { clerkUserId: userId },
+        });
+      }
+    } catch {
+      // No user logged in or auth failed — that's okay
+      console.log()
+      dbUser = null;
     }
 
-    //building where condition
+    // Build where condition
     const where: any = {
       status: "AVAILABLE",
     };
@@ -129,7 +135,7 @@ export async function getFilteredCars({
     if (transmission)
       where.transmission = { equals: transmission, mode: "insensitive" };
 
-    //add price range
+    // Price filter
     where.price = {
       gte: typeof minPrice === "string" ? parseFloat(minPrice) : minPrice || 0,
     };
@@ -139,12 +145,9 @@ export async function getFilteredCars({
         typeof maxPrice === "string" ? parseFloat(maxPrice) : maxPrice;
     }
 
-    //calculate pagination
     const skip = (page - 1) * limit;
 
-    //determine sort order
     let orderBy = {};
-
     switch (sortBy) {
       case "priceAsc":
         orderBy = { price: "asc" };
@@ -158,10 +161,8 @@ export async function getFilteredCars({
         break;
     }
 
-    //get total count for pagination
     const totalCars = await db.car.count({ where });
 
-    //executing main query
     const cars = await db.car.findMany({
       where,
       take: limit,
@@ -169,8 +170,8 @@ export async function getFilteredCars({
       orderBy,
     });
 
-    //if we have a user, check which cars are wishlisted
-    let wishlisted: Set<string>;
+    // Wishlist check only if user exists
+    let wishlisted: Set<string> = new Set();
     if (dbUser) {
       const savedCars = await db.userSavedCar.findMany({
         where: { userId: dbUser.id },
@@ -180,7 +181,6 @@ export async function getFilteredCars({
       wishlisted = new Set(savedCars.map((saved) => saved.carId));
     }
 
-    // Serialize and check wishlist status
     const serializedCars = cars.map((car) =>
       serializeCarData(car, wishlisted.has(car.id))
     );
@@ -197,12 +197,13 @@ export async function getFilteredCars({
     };
   } catch (error) {
     throw new Error(
-      `Gemini API error: ${
+      `GetFilteredCars error: ${
         error instanceof Error ? error.message : String(error)
       }`
     );
   }
 }
+
 
 //toggle cars in user's wishlist
 export async function toggleSavedCar(carId: string) {
