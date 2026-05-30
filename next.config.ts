@@ -18,22 +18,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "ndfwohusrgytsjmrgaqg.supabase.co",
+        hostname: "nbntehuqjqllmoqcixac.supabase.co",
       },
     ],
-  },
-  async headers() {
-    return [
-      {
-        source: "/embed",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: "frame-src 'self' https://roadsidecoder.created.app;",
-          },
-        ],
-      },
-    ];
   },
 };
 
